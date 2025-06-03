@@ -1,161 +1,177 @@
 #!/bin/bash
 
-# LeetCode Solutions Runner
-# Usage: ./run [problem_number] [language]
-# Example: ./run 88 py
-#          ./run 88 go
-#          ./run 88 c
-#          ./run 88 rs
-
 set -e
 
-PROBLEMS_DIR="problems"
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-show_usage() {
-    echo "Usage: $0 [problem_number] [language]"
+# Function to print usage
+usage() {
+    echo "Usage: $0 <problem_name> <language>"
     echo ""
-    echo "Languages:"
-    echo "  py  - Python"
-    echo "  go  - Go"
-    echo "  c   - C"
-    echo "  rs  - Rust"
+    echo "Languages supported: c, go, python, rust"
     echo ""
     echo "Examples:"
-    echo "  $0 88 py    # Run Python solution for problem 88"
-    echo "  $0 88 go    # Run Go solution for problem 88"
-    echo "  $0 list     # List all available problems"
+    echo "  $0 88_merged-sorted-array c"
+    echo "  $0 88_merged-sorted-array go"
+    echo "  $0 88_merged-sorted-array python"
+    echo "  $0 88_merged-sorted-array rust"
     echo ""
-}
-
-list_problems() {
     echo "Available problems:"
-    for dir in $PROBLEMS_DIR/*/; do
-        if [ -d "$dir" ]; then
-            problem_name=$(basename "$dir")
-            echo "  $problem_name"
+    for dir in */; do
+        if [[ -d "$dir" && "$dir" != ".ropeproject/" ]]; then
+            echo "  ${dir%/}"
         fi
     done
 }
 
-find_problem_dir() {
-    local problem_num=$1
-    for dir in $PROBLEMS_DIR/*; do
-        if [ -d "$dir" ] && [[ "$(basename "$dir")" == ${problem_num}_* ]]; then
-            echo "$dir"
-            return 0
-        fi
-    done
-    return 1
+# Function to print colored messages
+print_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
 }
 
-run_python() {
-    local file=$1
-    echo "Running Python solution..."
-    python3 "$file"
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
-run_go() {
-    local file=$1
-    echo "Running Go solution..."
-    go run "$file"
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-run_c() {
-    local file=$1
-    local dir=$(dirname "$file")
-    local exec_file="$dir/solution"
-    
-    echo "Compiling C solution..."
-    gcc -o "$exec_file" "$file"
-    
-    echo "Running C solution..."
-    "$exec_file"
-    
-    # Clean up executable
-    rm -f "$exec_file"
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
 }
 
-run_rust() {
-    local file=$1
-    local dir=$(dirname "$file")
-    local exec_file="$dir/solution"
-    
-    echo "Compiling Rust solution..."
-    rustc -o "$exec_file" "$file"
-    
-    echo "Running Rust solution..."
-    "$exec_file"
-    
-    # Clean up executable
-    rm -f "$exec_file"
-}
+# Check if correct number of arguments provided
+if [ $# -ne 2 ]; then
+    print_error "Invalid number of arguments"
+    usage
+    exit 1
+fi
 
-main() {
-    if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
-        show_usage
-        exit 0
-    fi
-    
-    if [ "$1" = "list" ]; then
-        list_problems
-        exit 0
-    fi
-    
-    if [ $# -ne 2 ]; then
-        echo "Error: Please provide both problem number and language"
-        show_usage
+PROBLEM_NAME="$1"
+LANGUAGE="$2"
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Check if problem directory exists
+if [ ! -d "$PROBLEM_NAME" ]; then
+    print_error "Problem directory '$PROBLEM_NAME' not found"
+    usage
+    exit 1
+fi
+
+# Determine solution directory based on language
+case "$LANGUAGE" in
+    "c")
+        SOLUTION_DIR="$PROBLEM_NAME/solution-c"
+        ;;
+    "go")
+        SOLUTION_DIR="$PROBLEM_NAME/solution-go"
+        ;;
+    "python")
+        SOLUTION_DIR="$PROBLEM_NAME/solution-python"
+        ;;
+    "rust")
+        SOLUTION_DIR="$PROBLEM_NAME/solution-rust"
+        ;;
+    *)
+        print_error "Unsupported language: $LANGUAGE"
+        print_error "Supported languages: c, go, python, rust"
         exit 1
-    fi
-    
-    local problem_num=$1
-    local language=$2
-    
-    # Find problem directory
-    problem_dir=$(find_problem_dir "$problem_num")
-    if [ $? -ne 0 ]; then
-        echo "Error: Problem $problem_num not found"
-        list_problems
-        exit 1
-    fi
-    
-    # Determine file extension and runner
-    case $language in
-        py|python)
-            solution_file="$problem_dir/solution.py"
-            runner="run_python"
-            ;;
-        go|golang)
-            solution_file="$problem_dir/solution.go"
-            runner="run_go"
-            ;;
-        c)
-            solution_file="$problem_dir/solution.c"
-            runner="run_c"
-            ;;
-        rs|rust)
-            solution_file="$problem_dir/solution.rs"
-            runner="run_rust"
-            ;;
-        *)
-            echo "Error: Unsupported language '$language'"
-            show_usage
+        ;;
+esac
+
+# Check if solution directory exists
+if [ ! -d "$SOLUTION_DIR" ]; then
+    print_error "Solution directory '$SOLUTION_DIR' not found"
+    exit 1
+fi
+
+print_info "Running $LANGUAGE solution for problem: $PROBLEM_NAME"
+echo ""
+
+# Change to solution directory
+cd "$SOLUTION_DIR"
+
+# Run based on language
+case "$LANGUAGE" in
+    "c")
+        print_info "Building C solution..."
+        if [ ! -f "main.c" ]; then
+            print_error "main.c not found in $SOLUTION_DIR"
             exit 1
-            ;;
-    esac
-    
-    # Check if solution file exists
-    if [ ! -f "$solution_file" ]; then
-        echo "Error: Solution file not found: $solution_file"
-        exit 1
-    fi
-    
-    echo "Problem: $(basename "$problem_dir")"
-    echo "Language: $language"
-    echo "File: $solution_file"
-    echo "----------------------------------------"
-    
-    # Run the solution
-    $runner "$solution_file"
-}
+        fi
+        
+        gcc -o main main.c
+        if [ $? -eq 0 ]; then
+            print_success "Build successful"
+            print_info "Running C solution..."
+            echo ""
+            ./main
+        else
+            print_error "Build failed"
+            exit 1
+        fi
+        ;;
+        
+    "go")
+        print_info "Building and running Go solution..."
+        if [ ! -f "main.go" ]; then
+            print_error "main.go not found in $SOLUTION_DIR"
+            exit 1
+        fi
+        
+        # Build the binary
+        go build -o main main.go
+        if [ $? -eq 0 ]; then
+            print_success "Build successful"
+            print_info "Running Go solution..."
+            echo ""
+            ./main
+        else
+            print_error "Build failed"
+            exit 1
+        fi
+        ;;
+        
+    "python")
+        print_info "Running Python solution..."
+        if [ ! -f "main.py" ]; then
+            print_error "main.py not found in $SOLUTION_DIR"
+            exit 1
+        fi
+        
+        echo ""
+        python3 main.py
+        ;;
+        
+    "rust")
+        print_info "Building and running Rust solution..."
+        if [ ! -f "Cargo.toml" ]; then
+            print_error "Cargo.toml not found in $SOLUTION_DIR"
+            print_error "This doesn't appear to be a valid Rust project"
+            exit 1
+        fi
+        
+        cargo build
+        if [ $? -eq 0 ]; then
+            print_success "Build successful"
+            print_info "Running Rust solution..."
+            echo ""
+            cargo run
+        else
+            print_error "Build failed"
+            exit 1
+        fi
+        ;;
+esac
 
-main "$@"
+echo ""
+print_success "Execution completed"
