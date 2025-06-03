@@ -77,9 +77,6 @@ case $LANGUAGE in
         if [ ! -f "main.go" ]; then
             echo "Error: main.go not found in $SOLUTION_DIR"
             exit 1
-        fi
-        if [ -f "main" ] && [ -x "main" ]; then
-            ./main
         else
             go run main.go
         fi
@@ -95,9 +92,6 @@ case $LANGUAGE in
         if [ ! -f "main.c" ]; then
             echo "Error: main.c not found in $SOLUTION_DIR"
             exit 1
-        fi
-        if [ -f "main" ] && [ -x "main" ]; then
-            ./main
         else
             gcc -o main main.c
             ./main

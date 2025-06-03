@@ -4,18 +4,22 @@ class Solution(object):
         j = n - 1
         k = m + n - 1
 
-        while j >= 0:
+        while j >= 0 and i >= 0:
             if (nums1[i] > nums2[j]):
-                print("branch1")
                 nums1[k] = nums1[i]
                 i -= 1
             else:
-                print("branch3")
                 nums1[k] = nums2[j]
                 j -= 1
             k -= 1
 
-if __name__ == "__main__":
+        # if there are any more to go we just add them on becuase we know they are sorted
+        while j >= 0:
+            nums1[k] = nums2[j]
+            j -= 1
+            k -= 1
+
+def case1():
     nums1 = [1,2,3,0,0,0]
     m = 3
     nums2 = [2,5,6]
@@ -24,4 +28,21 @@ if __name__ == "__main__":
     s.merge(nums1, m, nums2, n)
 
     expected = [1,2,2,3,5,6]
-    print(f"Expected {expected} actual {nums1}")
+    assert(nums1 == expected)
+    print("case 1 passed")
+
+def case2():
+    nums1 = [2,0]
+    m = 1
+    nums2 = [1]
+    n = 1
+    s = Solution()
+    s.merge(nums1, m, nums2, n)
+
+    expected = [1,2]
+    assert(nums1 == expected)
+    print("case 2 passed")
+
+if __name__ == "__main__":
+    case1()
+    case2()
