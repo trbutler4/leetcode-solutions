@@ -1,0 +1,161 @@
+#!/bin/bash
+
+# LeetCode Solutions Runner
+# Usage: ./run [problem_number] [language]
+# Example: ./run 88 py
+#          ./run 88 go
+#          ./run 88 c
+#          ./run 88 rs
+
+set -e
+
+PROBLEMS_DIR="problems"
+
+show_usage() {
+    echo "Usage: $0 [problem_number] [language]"
+    echo ""
+    echo "Languages:"
+    echo "  py  - Python"
+    echo "  go  - Go"
+    echo "  c   - C"
+    echo "  rs  - Rust"
+    echo ""
+    echo "Examples:"
+    echo "  $0 88 py    # Run Python solution for problem 88"
+    echo "  $0 88 go    # Run Go solution for problem 88"
+    echo "  $0 list     # List all available problems"
+    echo ""
+}
+
+list_problems() {
+    echo "Available problems:"
+    for dir in $PROBLEMS_DIR/*/; do
+        if [ -d "$dir" ]; then
+            problem_name=$(basename "$dir")
+            echo "  $problem_name"
+        fi
+    done
+}
+
+find_problem_dir() {
+    local problem_num=$1
+    for dir in $PROBLEMS_DIR/*; do
+        if [ -d "$dir" ] && [[ "$(basename "$dir")" == ${problem_num}_* ]]; then
+            echo "$dir"
+            return 0
+        fi
+    done
+    return 1
+}
+
+run_python() {
+    local file=$1
+    echo "Running Python solution..."
+    python3 "$file"
+}
+
+run_go() {
+    local file=$1
+    echo "Running Go solution..."
+    go run "$file"
+}
+
+run_c() {
+    local file=$1
+    local dir=$(dirname "$file")
+    local exec_file="$dir/solution"
+    
+    echo "Compiling C solution..."
+    gcc -o "$exec_file" "$file"
+    
+    echo "Running C solution..."
+    "$exec_file"
+    
+    # Clean up executable
+    rm -f "$exec_file"
+}
+
+run_rust() {
+    local file=$1
+    local dir=$(dirname "$file")
+    local exec_file="$dir/solution"
+    
+    echo "Compiling Rust solution..."
+    rustc -o "$exec_file" "$file"
+    
+    echo "Running Rust solution..."
+    "$exec_file"
+    
+    # Clean up executable
+    rm -f "$exec_file"
+}
+
+main() {
+    if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+        show_usage
+        exit 0
+    fi
+    
+    if [ "$1" = "list" ]; then
+        list_problems
+        exit 0
+    fi
+    
+    if [ $# -ne 2 ]; then
+        echo "Error: Please provide both problem number and language"
+        show_usage
+        exit 1
+    fi
+    
+    local problem_num=$1
+    local language=$2
+    
+    # Find problem directory
+    problem_dir=$(find_problem_dir "$problem_num")
+    if [ $? -ne 0 ]; then
+        echo "Error: Problem $problem_num not found"
+        list_problems
+        exit 1
+    fi
+    
+    # Determine file extension and runner
+    case $language in
+        py|python)
+            solution_file="$problem_dir/solution.py"
+            runner="run_python"
+            ;;
+        go|golang)
+            solution_file="$problem_dir/solution.go"
+            runner="run_go"
+            ;;
+        c)
+            solution_file="$problem_dir/solution.c"
+            runner="run_c"
+            ;;
+        rs|rust)
+            solution_file="$problem_dir/solution.rs"
+            runner="run_rust"
+            ;;
+        *)
+            echo "Error: Unsupported language '$language'"
+            show_usage
+            exit 1
+            ;;
+    esac
+    
+    # Check if solution file exists
+    if [ ! -f "$solution_file" ]; then
+        echo "Error: Solution file not found: $solution_file"
+        exit 1
+    fi
+    
+    echo "Problem: $(basename "$problem_dir")"
+    echo "Language: $language"
+    echo "File: $solution_file"
+    echo "----------------------------------------"
+    
+    # Run the solution
+    $runner "$solution_file"
+}
+
+main "$@"
