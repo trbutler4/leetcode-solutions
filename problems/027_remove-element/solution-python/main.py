@@ -14,7 +14,7 @@ class Solution:
         return num_not_equal
 
 
-def case1():
+if __name__ == "__main__":
     nums = [3, 2, 2, 3]
     val = 3
     s = Solution()
@@ -26,8 +26,6 @@ def case1():
     print(f"{nums=}")
     assert result == expected_return
 
-
-def case2():
     nums = [0,1,2,2,3,0,4,2]
     val = 2
     s = Solution()
@@ -38,8 +36,3 @@ def case2():
     print(f"{result=}")
     print(f"{nums=}")
     assert result == expected_return
-
-
-if __name__ == "__main__":
-    case1()
-    case2()

@@ -19,7 +19,8 @@ class Solution(object):
             j -= 1
             k -= 1
 
-def case1():
+
+if __name__ == "__main__":
     nums1 = [1,2,3,0,0,0]
     m = 3
     nums2 = [2,5,6]
@@ -31,7 +32,6 @@ def case1():
     assert(nums1 == expected)
     print("case 1 passed")
 
-def case2():
     nums1 = [2,0]
     m = 1
     nums2 = [1]
@@ -42,7 +42,3 @@ def case2():
     expected = [1,2]
     assert(nums1 == expected)
     print("case 2 passed")
-
-if __name__ == "__main__":
-    case1()
-    case2()
