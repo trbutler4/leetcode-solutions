@@ -27,7 +27,6 @@ if __name__ == "__main__":
     n = 3
     s = Solution()
     s.merge(nums1, m, nums2, n)
-
     expected = [1,2,2,3,5,6]
     assert(nums1 == expected)
     print("case 1 passed")
@@ -38,7 +37,6 @@ if __name__ == "__main__":
     n = 1
     s = Solution()
     s.merge(nums1, m, nums2, n)
-
     expected = [1,2]
     assert(nums1 == expected)
     print("case 2 passed")
