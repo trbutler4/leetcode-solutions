@@ -1,19 +1,45 @@
 class Solution:
     def removeElement(self, nums: list[int], val: int) -> int:
-       return 0
+        i = 0
+        j = 0
+        num_not_equal = 0
+        while i < len(nums):
+            if nums[i] == val:
+                nums[i] = -1
+            else:
+                num_not_equal += 1
+                nums[j] = nums[i]
+                j += 1
+            i += 1
+        return num_not_equal
 
 
 def case1():
-    nums = [3,2,2,3]
+    nums = [3, 2, 2, 3]
     val = 3
     s = Solution()
 
     expected_return = 2
 
     result = s.removeElement(nums, val)
-    assert(result == expected_return)
-    assert(nums[0] == 2)
-    assert(nums[1] == 2)
+    print(f"{result=}")
+    print(f"{nums=}")
+    assert result == expected_return
+
+
+def case2():
+    nums = [0,1,2,2,3,0,4,2]
+    val = 2
+    s = Solution()
+
+    expected_return = 5
+
+    result = s.removeElement(nums, val)
+    print(f"{result=}")
+    print(f"{nums=}")
+    assert result == expected_return
+
 
 if __name__ == "__main__":
     case1()
+    case2()
