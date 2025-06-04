@@ -18,9 +18,7 @@ if __name__ == "__main__":
     nums = [3, 2, 2, 3]
     val = 3
     s = Solution()
-
     expected_return = 2
-
     result = s.removeElement(nums, val)
     print(f"{result=}")
     print(f"{nums=}")
@@ -29,9 +27,7 @@ if __name__ == "__main__":
     nums = [0,1,2,2,3,0,4,2]
     val = 2
     s = Solution()
-
     expected_return = 5
-
     result = s.removeElement(nums, val)
     print(f"{result=}")
     print(f"{nums=}")
